@@ -1,0 +1,57 @@
+---
+title: "Week 2"
+author: "Gregory Biland"
+date: "4/28/2022"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(readr)        # to import tabular data (e.g. csv)
+library(dplyr)        # to manipulate (tabular) data
+library(ggplot2)      # to visualize data
+library(sf)           # to handle spatial vector data
+library(terra)        # To handle raster data
+library(lubridate)    # To handle dates and times
+
+
+dataFolder   <- here::here()   
+RFolder      <- here::here()         
+figureFolder <- here::here("figs") 
+```
+
+## Taks 1
+```{r}
+wildschwein_BE <- read_delim(file.path(dataFolder, "wildschwein_BE_2056.csv")) # adjust path
+
+```
+
+```{r}
+wildschwein_BE <- st_as_sf(wildschwein_BE, coords = c("E", "N"), crs = 2056, remove = FALSE)
+
+```
+
+## Task 2
+
+```{r}
+wildschwein <- group_by(wildschwein_BE,TierID)
+wildschwein <- mutate(wildschwein_BE,timelag = as.numeric(difftime(lead(DatetimeUTC),DatetimeUTC)))
+
+wildschwein
+
+wildschwein %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_timelag = mean(timelag,na.rm = T))
+
+```
+How many individuals were tracked?
+For how long were the individual tracked? Are there gaps?
+Were all individuals tracked concurrently or sequentially?
+What is the temporal sampling interval between the locations?
+
+
+

@@ -1,5 +1,5 @@
 ---
-title: "Practicals"
+title: "Week 1"
 author: "Gregory Biland"
 date: "4/28/2022"
 output: pdf_document
@@ -15,6 +15,7 @@ library(readr)        # to import tabular data (e.g. csv)
 library(dplyr)        # to manipulate (tabular) data
 library(ggplot2)
 library(terra)
+library(sf)
 
 
 dataFolder   <- here::here()   
@@ -93,7 +94,7 @@ ggplot(mcp,aes(fill = TierID)) +
   geom_sf(alpha = 0.4) +
   coord_sf(datum = 2056)
 
-pk100_BE <- terra::rast("00_Rawdata/pk100_BE.tif")
+pk100_BE <- terra::rast(file.path(dataFolder, "pk100_BE.tif"))
 
 pk100_BE
 
@@ -118,7 +119,7 @@ tm_shape(pk100_BE) +
 # task 6 ########################################################################
 
 ```{r}
-tmap_mode("view")
+tmap_mode("plot")
 
 tm_shape(mcp) +
   tm_polygons(col = "TierID",alpha = 0.4,border.col = "red") +
