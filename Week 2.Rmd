@@ -1,8 +1,22 @@
 ---
-title: "Week 2"
+title: "GEO880 - CMA: Exercise 2"
 author: "Gregory Biland"
-date: "4/28/2022"
-output: pdf_document
+date: "5/3/2022"
+output:
+  html_document:
+    code_folding: hide
+    fig_caption: yes
+    number_sections: no
+    toc: yes
+    toc_depth: 3
+    toc_float: no
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+    fig_caption: yes
+  word_document:
+    toc: yes
+    toc_depth: '3'
 ---
 
 ```{r setup, include=FALSE}
@@ -10,13 +24,16 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r}
+Sys.setenv(LANG = "en")
 library(readr)        # to import tabular data (e.g. csv)
 library(dplyr)        # to manipulate (tabular) data
 library(ggplot2)      # to visualize data
 library(sf)           # to handle spatial vector data
 library(terra)        # To handle raster data
 library(lubridate)    # To handle dates and times
-
+library(grid)
+library(gridExtra)
+library(zoo)
 
 dataFolder   <- here::here()   
 RFolder      <- here::here()         
@@ -24,21 +41,20 @@ figureFolder <- here::here("figs")
 ```
 
 ## Taks 1
-```{r}
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
 wildschwein_BE <- read_delim(file.path(dataFolder, "wildschwein_BE_2056.csv")) # adjust path
 
 ```
 
-```{r}
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
 wildschwein_BE <- st_as_sf(wildschwein_BE, coords = c("E", "N"), crs = 2056, remove = FALSE)
 
 ```
 
 ## Task 2
 
-```{r}
-wildschwein <- group_by(wildschwein_BE,TierID)
-wildschwein <- mutate(wildschwein_BE,timelag = as.numeric(difftime(lead(DatetimeUTC),DatetimeUTC)))
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
+wildschwein <- wildschwein_BE %>% group_by(TierID) %>% mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC)))
 
 wildschwein
 
@@ -47,11 +63,217 @@ wildschwein %>%
   summarise(                              
     mean_timelag = mean(timelag,na.rm = T))
 
+summary(wildschwein$timelag)
+
 ```
-How many individuals were tracked?
 For how long were the individual tracked? Are there gaps?
 Were all individuals tracked concurrently or sequentially?
 What is the temporal sampling interval between the locations?
 
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
+ggplot()+
+  geom_line(data = wildschwein, aes(x = DatetimeUTC, y = TierID))
 
+ggplot()+
+  geom_step(data = wildschwein, aes(x = DatetimeUTC, y = timelag, col = TierID))
+```
+In total 3 individuals were tracked, corresponding to the numbers "002A", "016A" and "018A". All animals, were tracked at the same time but not with the same duration. The animal with the number 002A, was monitored the longest from fall of 2014 until the summer of 2015. Regarding the gaps in the monitoring, I would not argue that there were gaps, despite the fact that the largest time gap between to measurements was almost 1 day, where the average timelag was only 23 Minutes.
+
+
+## Task 3
+
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
+wildschwein <- wildschwein %>% group_by(TierID) %>% 
+    mutate(steplength = sqrt((E - lead(E,1))^2+ (N - lead(N,1))^2))
+
+wildschwein <- wildschwein %>% mutate(speed = (steplength / timelag)*3.6)
+
+ggplot() +
+  geom_line(data = wildschwein, aes(y = speed, x = DatetimeUTC, col = TierID))+
+  xlab("Time")+
+  ylab("Speed [km/h]")+
+  ggtitle("Speed over time for each of the three observed animals [002A, 0016A, 0018A]")
+
+wildschwein %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_speed = mean(speed,na.rm = T))
+
+```
+The unit in which the speed is returned would be m/s, but can be changed to km/h, by multiplying by 3.6.
+
+## Task 4
+
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
+caro <- read_delim(file.path(dataFolder, "caro60.csv"))
+```
+
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
+caro3 <- caro %>% slice(seq(1,200, by = 3))
+caro6 <- caro %>% slice(seq(1,200, by = 6))
+caro9 <- caro %>% slice(seq(1,200, by = 9))
+```
+
+```{r Cora,echo = FALSE, warning = FALSE, message = FALSE}
+caro <- caro %>% group_by(TierID) %>% mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC))*60)
+
+caro %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_timelag = mean(timelag,na.rm = T))
+
+caro <- caro %>% group_by(TierID) %>% 
+    mutate(steplength = sqrt((E - lead(E,1))^2+ (N - lead(N,1))^2))
+
+caro <- caro %>% mutate(speed = (steplength / timelag)*3.6)
+
+caro %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_speed = mean(speed,na.rm = T))
+
+```
+
+```{r Caro3,echo = FALSE, warning = FALSE, message = FALSE}
+caro3 <- caro3 %>% group_by(TierID) %>% mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC))*60)
+
+caro3 %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_timelag = mean(timelag,na.rm = T))
+
+caro3 <- caro3 %>% group_by(TierID) %>% 
+    mutate(steplength = sqrt((E - lead(E,1))^2+ (N - lead(N,1))^2))
+
+caro3 <- caro3 %>% mutate(speed = (steplength / timelag)*3.6)
+
+caro3 %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_speed = mean(speed,na.rm = T))
+
+```
+
+```{r Caro6,echo = FALSE, warning = FALSE, message = FALSE}
+caro6 <- caro6 %>% group_by(TierID) %>% mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC))*60)
+
+caro6 %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_timelag = mean(timelag,na.rm = T))
+
+caro6 <- caro6 %>% group_by(TierID) %>% 
+    mutate(steplength = sqrt((E - lead(E,1))^2+ (N - lead(N,1))^2))
+
+caro6 <- caro6 %>% mutate(speed = (steplength / timelag)*3.6)
+
+caro6 %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_speed = mean(speed,na.rm = T))
+```
+
+```{r Caro9,echo = FALSE, warning = FALSE, message = FALSE}
+caro9 <- caro9 %>% group_by(TierID) %>% mutate(timelag = as.integer(difftime(lead(DatetimeUTC),DatetimeUTC))*60)
+
+caro9 %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_timelag = mean(timelag,na.rm = T))
+
+caro9 <- caro9 %>% group_by(TierID) %>% 
+    mutate(steplength = sqrt((E - lead(E,1))^2+ (N - lead(N,1))^2))
+
+caro9 <- caro9 %>% mutate(speed = (steplength / timelag)*3.6)
+
+caro9 %>%                           
+  group_by(TierID) %>%                    
+  summarise(                              
+    mean_speed = mean(speed,na.rm = T))
+```
+
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
+c1 <- ggplot() +
+  geom_line(data = caro, aes(y = speed, x = DatetimeUTC, col = TierID))+
+  xlab("Time")+
+  ylab("Speed [km/h]")
+
+c3 <- ggplot() +
+  geom_line(data = caro3, aes(y = speed, x = DatetimeUTC, col = TierID))+
+  xlab("Time")+
+  ylab("Speed [km/h]")
+
+c6 <- ggplot() +
+  geom_line(data = caro6, aes(y = speed, x = DatetimeUTC, col = TierID))+
+  xlab("Time")+
+  ylab("Speed [km/h]")
+
+c9 <- ggplot() +
+  geom_line(data = caro9, aes(y = speed, x = DatetimeUTC, col = TierID))+
+  xlab("Time")+
+  ylab("Speed [km/h]")
+
+grid.arrange(c1, c3, c6, c9, nrow = 2, top = textGrob("Comparing derived speed at different sampling intervals",gp=gpar(fontsize=20,font=3)))
+
+
+ggplot()+
+  geom_path(data = caro, aes(x = E, y = N, col = "red"), alpha = 0.3)+
+  geom_point(data = caro, aes(x = E, y = N, col = "red"), alpha = 0.3)+
+  geom_path(data = caro3, aes(x = E, y = N, col = "blue"))+
+  geom_point(data = caro3, aes(x = E, y = N, col = "blue"))+
+  ggtitle("Comparing original- with 3 minutes-resampled data")+ labs(colour = "Trajectory")+
+  theme_minimal()+
+  scale_color_manual(labels = c("1- minute", "3- minutes"),
+                     values = c("red", "blue"))
+
+ggplot()+
+  geom_path(data = caro, aes(x = E, y = N, col = "red"), alpha = 0.3)+
+  geom_point(data = caro, aes(x = E, y = N, col = "red"), alpha = 0.3)+
+  geom_path(data = caro6, aes(x = E, y = N, col = "blue"))+
+  geom_point(data = caro6, aes(x = E, y = N, col = "blue"))+
+  ggtitle("Comparing original- with 6 minutes-resampled data")+
+  labs(colour = "Trajectory")+
+  theme_minimal()+
+  scale_color_manual(labels = c("1- minute", "6- minutes"),
+                     values = c("red", "blue"))
+
+ggplot()+
+  geom_path(data = caro, aes(x = E, y = N, col = "red"), alpha = 0.3)+
+  geom_point(data = caro, aes(x = E, y = N, col = "red"), alpha = 0.3)+
+  geom_path(data = caro9, aes(x = E, y = N, col = "blue"))+
+  geom_point(data = caro9, aes(x = E, y = N, col = "blue"))+
+  ggtitle("Comparing original- with 9 minutes-resampled data")+
+  labs(colour = "Trajectory")+
+  theme_minimal()+
+  scale_color_manual(labels = c("1- minute", "9- minutes"),
+                     values = c("red", "blue"))
+
+```
+
+## Task 5
+
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
+caro_rw3 <- rollmean(caro$speed,k = 3,fill = NA,align = "left") %>% as_data_frame()
+summary(caro_rw3)
+caro_rw4 <- rollmean(caro$speed,k = 4,fill = NA,align = "left") %>% as_data_frame()
+summary(caro_rw4)
+caro_rw5 <- rollmean(caro$speed,k = 5,fill = NA,align = "left") %>% as_data_frame()
+summary(caro_rw5)
+caro_rw6 <- rollmean(caro$speed,k = 6,fill = NA,align = "left") %>% as_data_frame()
+summary(caro_rw6)
+
+
+ggplot()+
+  geom_line(data = caro_rw3, aes(y = value, x = caro$DatetimeUTC,col = "red"))+
+  geom_line(data = caro_rw4, aes(y = value, x = caro$DatetimeUTC,col = "green"))+
+  geom_line(data = caro_rw5, aes(y = value, x = caro$DatetimeUTC,col = "blue"))+
+  geom_line(data = caro_rw6, aes(y = value, x = caro$DatetimeUTC,col = "darkred"))+
+  ggtitle("Comparing different k- values in moving window function - rollmean")+
+  labs(colour = "k- values")+
+  theme_minimal()+
+  xlab("Time")+
+  ylab("Speed [km/h]")+
+  scale_color_manual(labels = c("k=3", "k=4", "k=5", "k=6"),
+                     values = c("red", "green", "blue", "darkred"))
+```
 
