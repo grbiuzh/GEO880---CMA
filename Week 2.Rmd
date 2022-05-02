@@ -20,10 +20,11 @@ output:
 ---
 
 ```{r setup, include=FALSE}
+library(knitr)
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r}
+```{r,echo = FALSE, warning = FALSE, message = FALSE}
 Sys.setenv(LANG = "en")
 library(readr)        # to import tabular data (e.g. csv)
 library(dplyr)        # to manipulate (tabular) data
@@ -34,6 +35,15 @@ library(lubridate)    # To handle dates and times
 library(grid)
 library(gridExtra)
 library(zoo)
+
+knitr::opts_chunk$set(
+  message = F,
+  fig.width = 7,
+  fig.height = 6,
+  pandoc.stack.size = "4g",
+  fig.align = 'center',
+  opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+)
 
 dataFolder   <- here::here()   
 RFolder      <- here::here()         
@@ -100,7 +110,7 @@ wildschwein %>%
     mean_speed = mean(speed,na.rm = T))
 
 ```
-The unit in which the speed is returned would be m/s, but can be changed to km/h, by multiplying by 3.6.
+The unit in which the speed is returned would be m/s, but can be changed to km/h, by multiplying by 3.6. An essential issue with the speed calculations it that it is greatly dependent on the output of the timelag value. As it is not always the same unit, so sometimes seconds and sometimes minutes, before the speed calculations the unit of the values have to be checked.
 
 ## Task 4
 
@@ -196,22 +206,26 @@ caro9 %>%
 c1 <- ggplot() +
   geom_line(data = caro, aes(y = speed, x = DatetimeUTC, col = TierID))+
   xlab("Time")+
-  ylab("Speed [km/h]")
+  ylab("Speed [km/h]")+
+  ggtitle("No subset")
 
 c3 <- ggplot() +
   geom_line(data = caro3, aes(y = speed, x = DatetimeUTC, col = TierID))+
   xlab("Time")+
-  ylab("Speed [km/h]")
+  ylab("Speed [km/h]")+
+  ggtitle("3rd position subset")
 
 c6 <- ggplot() +
   geom_line(data = caro6, aes(y = speed, x = DatetimeUTC, col = TierID))+
   xlab("Time")+
-  ylab("Speed [km/h]")
+  ylab("Speed [km/h]")+
+  ggtitle("6th position subset")
 
 c9 <- ggplot() +
   geom_line(data = caro9, aes(y = speed, x = DatetimeUTC, col = TierID))+
   xlab("Time")+
-  ylab("Speed [km/h]")
+  ylab("Speed [km/h]")+
+  ggtitle("9th position")
 
 grid.arrange(c1, c3, c6, c9, nrow = 2, top = textGrob("Comparing derived speed at different sampling intervals",gp=gpar(fontsize=20,font=3)))
 
@@ -249,6 +263,9 @@ ggplot()+
                      values = c("red", "blue"))
 
 ```
+In terms of velocities, it is clear to see how the temporal accuracy changes when the points are removed from the data set. Thus, in the original data set, every small velocity is still visible, while up to the subset with every 9th position, the curve is almost completely smoothed, as 90% of the values are missing. Basically, the global trends can still be read out in the 3 reduced plots. The more detailed trends are asked, the more difficult this becomes. Thus, with the complete data set, minutely trends can still be shown, whereas with the last plot, it is only possible to recognize hourly trends and information. 
+
+The same is with the motion paths. The fewer data points, the more the path is simplified and less meaningful in detail.
 
 ## Task 5
 
