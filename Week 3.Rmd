@@ -35,6 +35,7 @@ library(lubridate)    # To handle dates and times
 library(grid)
 library(gridExtra)
 library(zoo)
+library(SimilarityMeasures)
 
 knitr::opts_chunk$set(
   message = F,
@@ -75,53 +76,146 @@ caro <- caro %>%
     stepMean = mean(c(nMinus3,nMinus2, nMinus1,nPlus1,nPlus2,nPlus3))
   ) %>%
   ungroup()
-
-caro <- caro %>% 
-  ungroup() %>%
-  mutate(static = stepMean < mean(stepMean, na.rm = TRUE))
-
-
-caro_filter <- caro %>%
-  filter(!static)
-
-caro_filter%>%
-  ggplot(aes(E, N))  +
-  geom_path() +
-  geom_point() +
-  coord_fixed() +
-  theme(legend.position = "bottom")+
-  ggtitle("Moving window reduced movement pattern of wild boars")
-
-caro%>%
-  ggplot(aes(E, N))  +
-  geom_path() +
-  geom_point() +
-  coord_fixed() +
-  theme(legend.position = "bottom")
 ```
 
 ## Task 2
 
 ```{r}
+hist(caro$stepMean)
+summary(caro$stepMean)
 
+caro <- caro %>% 
+  ungroup() %>%
+  mutate(static = stepMean < 10) #When the stepmean is smaller than 10, all the movement is considered as static, otherwise the movement is non-static
+
+caro_filter <- caro %>%
+  filter(!static)
 
 ```
 
 ## Task 3
 
 ```{r}
+caro_filter%>%
+  ggplot(aes(E, N, col = static))  +
+  geom_path() +
+  geom_point() +
+  coord_equal() +
+  theme(legend.position = "right")+
+  ggtitle("Moving window reduced movement pattern of wild boars")+
+  labs(colour="Is- Static")
+
+caro%>%
+  ggplot(aes(E, N, col = static))  +
+  geom_path() +
+  geom_point() +
+  coord_equal() +
+  theme(legend.position = "right")+
+  ggtitle("None- reduced movement pattern of wild boars")+
+  labs(colour="Is- Static")
 
 ```
 
 ## Task 4
 
 ```{r}
+rle_id <- function(vec){
+  x <- rle(vec)$lengths
+  as.factor(rep(seq_along(x), times=x))
+}
 
+caro <- caro %>%
+  mutate(segment_id = rle_id(static))
+
+caro_seg_filter <- caro %>%
+  filter(!static)
+
+caro_seg5 <- caro_seg_filter %>%
+  group_by(segment_id) %>% 
+  filter(length(segment_id) >= 5)
+
+p1 <- caro_seg_filter %>%
+  ggplot(aes(E, N, col = segment_id))  +
+  geom_path() +
+  geom_point() +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("All segments (uncleaned)")
+
+p2 <- caro_seg5 %>%
+  ggplot(aes(E, N, col = segment_id))  +
+  geom_path() +
+  geom_point() +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("Long segments (removed segments <5)")
+
+grid.arrange(p1,p2, nrow = 2, top = textGrob("Moving segments colored by ID",gp=gpar(fontsize=16,font=3)))
 ```
 
 ## Task 5
+```{r}
+ped <- read_delim(file.path(dataFolder, "pedestrian.csv"))
+ped <- as.data.frame(ped)
+```
+
 
 ```{r}
+t1 = ped %>%
+  filter(TrajID == 1) %>% 
+  ggplot(aes(E, N))  +
+  geom_path(col = "red") +
+  geom_point(col = "red") +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("TrajID: 1")
+
+t2 = ped %>%
+  filter(TrajID == 2) %>% 
+  ggplot(aes(E, N))  +
+  geom_path(col = "brown") +
+  geom_point(col = "brown") +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("TrajID: 2")
+
+t3 = ped %>%
+  filter(TrajID == 3) %>% 
+  ggplot(aes(E, N))  +
+  geom_path(col = "green") +
+  geom_point(col = "green") +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("TrajID: 3")
+
+t4 = ped %>%
+  filter(TrajID == 4) %>% 
+  ggplot(aes(E, N))  +
+  geom_path(col = "turquoise") +
+  geom_point(col = "turquoise") +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("TrajID: 4")
+
+t5 = ped %>%
+  filter(TrajID == 5) %>% 
+  ggplot(aes(E, N))  +
+  geom_path(col = "blue") +
+  geom_point(col = "blue") +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("TrajID: 5")
+
+t6 = ped %>%
+  filter(TrajID == 6) %>% 
+  ggplot(aes(E, N))  +
+  geom_path(col = "pink") +
+  geom_point(col = "pink") +
+  coord_equal() +
+  theme(legend.position = "none")+
+  ggtitle("TrajID: 6")
+
+grid.arrange(t1,t2,t3,t4,t5,t6, nrow = 2, top = textGrob("Visual comparison of the 6 trajectories",gp=gpar(fontsize=16,font=3)))
 
 ```
 
