@@ -241,6 +241,7 @@ t6 <- ped %>%
 
 dtw <- DTW(t1,t2)
 
+edit()
 ```
 
 
