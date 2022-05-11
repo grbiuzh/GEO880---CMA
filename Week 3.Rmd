@@ -158,63 +158,57 @@ p1 + p2 + patchwork::plot_annotation(title = "Moving segments coloured by segmen
 
 ## Task 5
 ```{r}
-ped <- read_delim(file.path(dataFolder, "pedestrian.csv"))
-ped <- as.data.frame(ped)
+ped <- read_delim(file.path(dataFolder, "pedestrian.csv")) %>% data.frame()
+
 ```
 
 
 ```{r}
-t1 = ped %>%
-  filter(TrajID == 1) %>% 
-  ggplot(aes(E, N))  +
-  geom_path(col = "red") +
-  geom_point(col = "red") +
+
+t1 <- ggplot()  +
+  geom_point(ped, mapping = aes(E,N), alpha = .1 )+
+  geom_point(subset(ped, TrajID %in% "1"), mapping = aes(E,N), color = "red")+
+  geom_path(subset(ped, TrajID %in% "1"), mapping = aes(E, N), color = "red") +
   coord_equal() +
   theme(legend.position = "none")+
   ggtitle("TrajID: 1")
 
-t2 = ped %>%
-  filter(TrajID == 2) %>% 
-  ggplot(aes(E, N))  +
-  geom_path(col = "brown") +
-  geom_point(col = "brown") +
+t2 <- ggplot()  +
+  geom_point(ped, mapping = aes(E,N), alpha = .1 )+
+  geom_point(subset(ped, TrajID %in% "2"), mapping = aes(E, N), color = "brown")+
+  geom_path(subset(ped, TrajID %in% "2"), mapping = aes(E, N), color = "brown") +
   coord_equal() +
   theme(legend.position = "none")+
   ggtitle("TrajID: 2")
 
-t3 = 
-  ped %>%
-  filter(TrajID == 3) %>% 
-  ggplot(aes(E, N))  +
-  geom_path(col = "darkgreen") +
-  geom_point(col = "darkgreen") +
+t3 <- ggplot()  +
+  geom_point(ped, mapping = aes(E,N), alpha = .1 )+
+  geom_point(subset(ped, TrajID %in% "3"), mapping = aes(E, N), color = "green")+
+  geom_path(subset(ped, TrajID %in% "3"), mapping = aes(E, N), color = "green") +
   coord_equal() +
   theme(legend.position = "none")+
   ggtitle("TrajID: 3")
 
-t4 = ped %>%
-  filter(TrajID == 4) %>% 
-  ggplot(aes(E, N))  +
-  geom_path(col = "turquoise") +
-  geom_point(col = "turquoise") +
+t4 <- ggplot()  +
+  geom_point(ped, mapping = aes(E,N), alpha = .1 )+
+  geom_point(subset(ped, TrajID %in% "4"), mapping = aes(E, N), color = "turquoise")+
+  geom_path(subset(ped, TrajID %in% "4"), mapping = aes(E, N), color = "turquoise") +
   coord_equal() +
   theme(legend.position = "none")+
   ggtitle("TrajID: 4")
 
-t5 = ped %>%
-  filter(TrajID == 5) %>% 
-  ggplot(aes(E, N))  +
-  geom_path(col = "blue") +
-  geom_point(col = "blue") +
+t5 <- ggplot()  +
+  geom_point(ped, mapping = aes(E,N), alpha = .1 )+
+  geom_point(subset(ped, TrajID %in% "5"), mapping = aes(E, N), color = "blue")+
+  geom_path(subset(ped, TrajID %in% "5"), mapping = aes(E, N), color = "blue") +
   coord_equal() +
   theme(legend.position = "none")+
   ggtitle("TrajID: 5")
 
-t6 = ped %>%
-  filter(TrajID == 6) %>% 
-  ggplot(aes(E, N))  +
-  geom_path(col = "pink") +
-  geom_point(col = "pink") +
+t6 <- ggplot()  +
+  geom_point(ped, mapping = aes(E,N), alpha = .1 )+
+  geom_point(subset(ped, TrajID %in% "6"), mapping = aes(E, N), color = "pink")+
+  geom_path(subset(ped, TrajID %in% "6"), mapping = aes(E, N), color = "pink") +
   coord_equal() +
   theme(legend.position = "none")+
   ggtitle("TrajID: 6")
@@ -226,23 +220,94 @@ grid.arrange(t1,t2,t3,t4,t5,t6, nrow = 2, top = textGrob("Visual comparison of t
 ## Task 6
 
 ```{r}
-t1 <- ped %>%
-  filter(TrajID == 1)
-t2 <- ped %>%
-  filter(TrajID == 2)
-t3 <- ped %>%
-  filter(TrajID == 3)
-t4 <- ped %>%
-  filter(TrajID == 4)
-t5 <- ped %>%
-  filter(TrajID == 5)
-t6 <- ped %>%
-  filter(TrajID == 6)
+#Creating subsets and transform them to unique matrices.
+tr1 <- ped %>% filter(TrajID == 1)
+tr1$TrajID <- NULL
+tr1$DatetimeUTC <- NULL
+tr1 <- as.matrix(tr1)
 
-dtw <- DTW(t1,t2)
+tr2 <- ped %>% filter(TrajID == 2)
+tr2$TrajID <- NULL
+tr2$DatetimeUTC <- NULL
+tr2 <- as.matrix(tr2)
 
-edit()
+tr3 <- ped %>% filter(TrajID == 3)
+tr3$TrajID <- NULL
+tr3$DatetimeUTC <- NULL
+tr3 <- as.matrix(tr3)
+
+tr4 <- ped %>% filter(TrajID == 4)
+tr4$TrajID <- NULL
+tr4$DatetimeUTC <- NULL
+tr4 <- as.matrix(tr4)
+
+tr5 <- ped %>% filter(TrajID == 5)
+tr5$TrajID <- NULL
+tr5$DatetimeUTC <- NULL
+tr5 <- as.matrix(tr5)
+
+tr6 <- ped %>% filter(TrajID == 6)
+tr6$TrajID <- NULL
+tr6$DatetimeUTC <- NULL
+tr6 <- as.matrix(tr6)
+
+# Methods
+frechet_1_2 <- Frechet(tr1,tr2)
+frechet_1_3 <- Frechet(tr1,tr3)
+frechet_1_4 <- Frechet(tr1,tr4)
+frechet_1_5 <- Frechet(tr1,tr5)
+frechet_1_6 <- Frechet(tr1,tr6)
+
+lcss_1_2 <- LCSS(tr1,tr2, pointSpacing = 1)
+lcss_1_3 <- LCSS(tr1,tr3, pointSpacing = 1)
+lcss_1_4 <- LCSS(tr1,tr4, pointSpacing = 1)
+lcss_1_5 <- LCSS(tr1,tr5, pointSpacing = 1)
+lcss_1_6 <- LCSS(tr1,tr6, pointSpacing = 1)
+
+dtw_1_2 <- DTW(tr1,tr2)
+dtw_1_3 <- DTW(tr1,tr3)
+dtw_1_4 <- DTW(tr1,tr4)
+dtw_1_5 <- DTW(tr1,tr5)
+dtw_1_6 <- DTW(tr1,tr6)
+
+edit_1_2 <- EditDist(tr1,tr2)
+edit_1_3 <- EditDist(tr1,tr3)
+edit_1_4 <- EditDist(tr1,tr4)
+edit_1_5 <- EditDist(tr1,tr5)
+edit_1_6 <- EditDist(tr1,tr6)
+
+# Creating df for all 4 different methods
+edit_df <- data.frame(trajectories = c("2", "3", "4", "5", "6"), value = c(edit_1_2, edit_1_3, edit_1_4, edit_1_5, edit_1_6))
+frechet_df <- data.frame(trajectories = c("2", "3", "4", "5", "6"), value = c(frechet_1_2, frechet_1_3, frechet_1_4, frechet_1_5, frechet_1_6))
+dtw_df <- data.frame(trajectories = c("2", "3", "4", "5", "6"), value = c(dtw_1_2, dtw_1_3, dtw_1_4, dtw_1_5, dtw_1_6))
+lcss_df <- data.frame(trajectories = c("2", "3", "4", "5", "6"), value = c(lcss_1_2, lcss_1_3, lcss_1_4, lcss_1_5, lcss_1_6))
+
+dtw_plot <- ggplot()+
+  geom_bar(data = dtw_df, aes(trajectories,value, fill = trajectories), stat = "identity")+
+  theme(legend.position = "none")+
+  ggtitle("DTW")
+
+edit_plot <- ggplot()+
+  geom_bar(data = edit_df, aes(trajectories,value, fill = trajectories), stat = "identity")+
+  theme(legend.position = "none")+
+  ggtitle("Edit distance")
+
+frechet_plot <- ggplot()+
+  geom_bar(data = frechet_df, aes(trajectories,value, fill = trajectories), stat = "identity")+
+  theme(legend.position = "none")+
+  ggtitle("Frechet")
+
+lcss_plot <- ggplot()+
+  geom_bar(data = lcss_df, aes(trajectories,value, fill = trajectories), stat = "identity")+
+  theme(legend.position = "none")+
+  ggtitle("LCSS")
+
+dtw_plot + edit_plot + frechet_plot+lcss_plot+ patchwork::plot_annotation(title = "Computed similarities sing different measures
+between trajectory 1 to all other trajectories")
 ```
+Can you see connections between the properties of the trajectories and the similarity values computed by the different measures?
+
+- It is relatively difficult to see the connections. For example, for trajectory 2 and 3, the values for the dtw measurement are completely different although they are both very similar compared to trajectory. Similarly, trajectory 6 has the highest similarity to 1 but the lowest dtw measurement value. The same is true for the other methods. Paths that are very similar do not have the same values across the band for the same measurement method even though from aug the paths actually look exactly the same. Only the LCSS value for the comparison of paths 1 and 6 clearly show the similarities with a PointSpacing of 1 and show that these paths are very similar even with a small threshold.
 
 
 
