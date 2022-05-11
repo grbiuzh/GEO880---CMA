@@ -36,6 +36,7 @@ library(grid)
 library(gridExtra)
 library(zoo)
 library(SimilarityMeasures)
+library(patchwork)
 
 knitr::opts_chunk$set(
   message = F,
@@ -102,7 +103,7 @@ caro_filter%>%
   geom_point() +
   coord_equal() +
   theme(legend.position = "right")+
-  ggtitle("Moving window reduced movement pattern of wild boars")+
+  ggtitle("+- 3min - moving window reduced movement pattern of wild boars")+
   labs(colour="Is- Static")
 
 caro%>%
@@ -132,7 +133,7 @@ caro_seg_filter <- caro %>%
 
 caro_seg5 <- caro_seg_filter %>%
   group_by(segment_id) %>% 
-  filter(length(segment_id) >= 5)
+  filter(length(segment_id) > 5)
 
 p1 <- caro_seg_filter %>%
   ggplot(aes(E, N, col = segment_id))  +
@@ -140,7 +141,8 @@ p1 <- caro_seg_filter %>%
   geom_point() +
   coord_equal() +
   theme(legend.position = "none")+
-  ggtitle("All segments (uncleaned)")
+  ggtitle("All segments (uncleaned)")+
+  theme(plot.title = element_text(size=11))
 
 p2 <- caro_seg5 %>%
   ggplot(aes(E, N, col = segment_id))  +
@@ -148,9 +150,10 @@ p2 <- caro_seg5 %>%
   geom_point() +
   coord_equal() +
   theme(legend.position = "none")+
-  ggtitle("Long segments (removed segments <5)")
+  ggtitle("Long segments (removed segments <5)")+
+  theme(plot.title = element_text(size=11))
 
-grid.arrange(p1,p2, nrow = 2, top = textGrob("Moving segments colored by ID",gp=gpar(fontsize=16,font=3)))
+p1 + p2 + patchwork::plot_annotation(title = "Moving segments coloured by segment ID")
 ```
 
 ## Task 5
@@ -179,11 +182,12 @@ t2 = ped %>%
   theme(legend.position = "none")+
   ggtitle("TrajID: 2")
 
-t3 = ped %>%
+t3 = 
+  ped %>%
   filter(TrajID == 3) %>% 
   ggplot(aes(E, N))  +
-  geom_path(col = "green") +
-  geom_point(col = "green") +
+  geom_path(col = "darkgreen") +
+  geom_point(col = "darkgreen") +
   coord_equal() +
   theme(legend.position = "none")+
   ggtitle("TrajID: 3")
@@ -222,6 +226,20 @@ grid.arrange(t1,t2,t3,t4,t5,t6, nrow = 2, top = textGrob("Visual comparison of t
 ## Task 6
 
 ```{r}
+t1 <- ped %>%
+  filter(TrajID == 1)
+t2 <- ped %>%
+  filter(TrajID == 2)
+t3 <- ped %>%
+  filter(TrajID == 3)
+t4 <- ped %>%
+  filter(TrajID == 4)
+t5 <- ped %>%
+  filter(TrajID == 5)
+t6 <- ped %>%
+  filter(TrajID == 6)
+
+dtw <- DTW(t1,t2)
 
 ```
 
