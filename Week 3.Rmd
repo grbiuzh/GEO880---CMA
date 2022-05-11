@@ -3,20 +3,7 @@ title: "GEO880 - CMA: Exercise 3"
 author: "Gregory Biland"
 date: "5/3/2022"
 output:
-  html_document:
-    code_folding: hide
-    fig_caption: yes
-    number_sections: no
-    toc: yes
-    toc_depth: 3
-    toc_float: no
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
-    fig_caption: yes
-  word_document:
-    toc: yes
-    toc_depth: '3'
+  html_document
 ---
 
 ```{r setup, include=FALSE}
