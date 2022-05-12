@@ -1,0 +1,46 @@
+---
+title: "Week 4"
+author: "Gregory Biland"
+date: "5/12/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, =FALSE, include=FALSE}
+Sys.setenv(LANG = "en")
+library(readr)        # to import tabular data (e.g. csv)
+library(dplyr)        # to manipulate (tabular) data
+library(ggplot2)      # to visualize data
+library(sf)           # to handle spatial vector data
+library(terra)        # To handle raster data
+library(lubridate)    # To handle dates and times
+library(grid)
+library(gridExtra)
+library(zoo)
+library(SimilarityMeasures)
+library(patchwork)
+
+knitr::opts_chunk$set(
+  message = F,
+  fig.width = 7,
+  fig.height = 6,
+  pandoc.stack.size = "4g",
+  fig.align = 'center',
+  opts_chunk$set(tidy.opts=list(width.cutoff=60),tidy=TRUE)
+)
+
+dataFolder   <- here::here()   
+RFolder      <- here::here()         
+figureFolder <- here::here("figs") 
+```
+
+```{r}
+fun <- function(){}
+fun
+
+```
+
